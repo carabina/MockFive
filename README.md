@@ -32,7 +32,8 @@ override func spec() { // Assuming Quick-style specs
     }
   }
   
-  // Inject MyProtocolMock, do tests here...
+  var mock = MyProtocolMock()
+  // Inject mock, do tests here...
 }
 
 // Class
@@ -49,7 +50,8 @@ override func spec() { // Assuming Quick-style specs
     override func identifier() -> String { mock(returns: "identifierString") }
   }
   
-  // Inject MyCustomModelMock, do tests here...
+  var mock = MyCustomModelMock()
+  // Inject mock, do tests here...
 }
 ```
 
