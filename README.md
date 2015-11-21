@@ -7,7 +7,7 @@ mock(Arg..., returns: T)       // Static return value
 mock(Arg...) { () -> T in }    // Closure return value
 ```
 
-# Mock Functions, Not Objects/Structs
+# Mock Functions, Not Objects and Structs
 Traditional mocking frameworks think in terms of getting a 'mock object'.  This doesn't work well with Swift's strict typing.  Instead, MockFive lets you easily generate a stub implementation for use in an override or implementation.  MockFive will log all invocations of those functions, optionally with arguments.  MockFive supports value and closure capture for return values.
 
 By providing 'mock functions' instead of 'mock objects', MockFive plays nice with the typing system and delivers an exceptionally clean testing experience without compromising the correctness of production code.
