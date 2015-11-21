@@ -1,10 +1,14 @@
 # MockFive
-Use `mock()` to generate stub functions mocks.
+Use `mock()` to generate stub functions mocks with attractive invocation records.
 
 ```Swift
 mock(Arg...)                   // Void return value
 mock(Arg..., returns: T)       // Static return value
 mock(Arg...) { () -> T in }    // Closure return value
+
+// Access record of called methods through 'invocations' property
+var myMock: Mock = someMockObject
+myMock.invocations // [ 'function(_: argumentValue, otherArgument: secondArgumentValue)', 'functonWithNoArgs()', 'shortFunc()' ]
 ```
 
 # Mock Functions, Not Objects and Structs
