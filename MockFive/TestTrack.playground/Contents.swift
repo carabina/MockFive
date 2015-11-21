@@ -42,7 +42,7 @@ struct MockStructOfMockworthyProtocol: Mock, MockworthyProtocol {
     }
     
     func takesAFew(arg: Int, otherArg: Int, stillOther: Int) -> String {
-        return mock(arg, otherArg, stillOther)
+        return mock(arg, otherArg, stillOther, returns: "")
     }
     
     func takesAFewFirstRequired(arg arg: Int, otherArg: Int) {
@@ -50,6 +50,10 @@ struct MockStructOfMockworthyProtocol: Mock, MockworthyProtocol {
     }
     
     func twoArgVariadic(arg: Int..., otherArg: String) {
+        return mock()
+    }
+    
+    func oneArgVariadic(arg: Int...) {
         return mock()
     }
 }
@@ -74,4 +78,3 @@ myMock.invocations[5]
 myMock.invocations[6]
 myMock.invocations[7]
 myMock.invocations[8]
-myMock.invocations[9]

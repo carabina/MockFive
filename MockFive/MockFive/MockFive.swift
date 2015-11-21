@@ -14,33 +14,37 @@ extension Mock {
     public var invocations: [String] { get { return mockRecords[instanceId] ?? [] } set(new) { mockRecords[instanceId] = new } }
     
     private func mockActual(arguments: [Any?], function: String) {
+        var invocation = ""
+        var invocations = [String]()
         let arguments = arguments.map { $0 ?? "nil" } as [Any]
         
-        print(arguments)
-        var invocations = [String]()
-        switch arguments.count {
-        case 0: invocations.append(function + "")
-        case 1: invocations.append(function + "(\(arguments.first ?? "nil"))")
-        default:
-            let functionStrings = function.componentsSeparatedByCharactersInSet(NSCharacterSet(charactersInString: "(:"))
-            var accumulatorString = functionStrings.first!
-            for i in 0..<functionStrings.count {
-                accumulatorString += functionStrings[i]
-                if i < arguments.count { accumulatorString += ": \(arguments[i] ?? "nil"), " }
-            }
-//            if let firstArgumentRange = accumulatorString.rangeOfCharacterFromSet(NSCharacterSet(charactersInString: ":")) {
-//                let replacementRange = Range(start: firstArgumentRange.startIndex, end: firstArgumentRange.endIndex.advancedBy(1))
-//                accumulatorString.replaceRange(replacementRange, with: "(")
-//            }
+        if .None == function.rangeOfCharacterFromSet(NSCharacterSet(charactersInString: "()")) {
+            invocation += function + "(\(arguments.first ?? "nil"))"
+        } else if let _ = function.rangeOfString("()") {
+            invocation += function
+        } else {
             
-//            if functionStrings.count - 2 != arguments.count {
-//                accumulatorString += " \()"
-//                accumulatorString += " (expected \(functionStrings.count - 1) args, got \(arguments.count)"
-//            }
-            
-            invocations.append(accumulatorString)
-            invocations.append(function)
         }
+        
+        let functionStrings = function.componentsSeparatedByCharactersInSet(NSCharacterSet(charactersInString: "(:"))
+        var accumulatorString = functionStrings.first!
+        for i in 0..<functionStrings.count {
+            accumulatorString += functionStrings[i]
+            if i < arguments.count { accumulatorString += ": \(arguments[i] ?? "nil"), " }
+        }
+        
+        //            if let firstArgumentRange = accumulatorString.rangeOfCharacterFromSet(NSCharacterSet(charactersInString: ":")) {
+        //                let replacementRange = Range(start: firstArgumentRange.startIndex, end: firstArgumentRange.endIndex.advancedBy(1))
+        //                accumulatorString.replaceRange(replacementRange, with: "(")
+        //            }
+        
+        //            if functionStrings.count - 2 != arguments.count {
+        //                accumulatorString += " \()"
+        //                accumulatorString += " (expected \(functionStrings.count - 1) args, got \(arguments.count)"
+        //            }
+        
+        //            invocations.append(accumulatorString)
+        invocations.append(function)
         
         if let existingInvocations = mockRecords[instanceId] { invocations = existingInvocations + invocations }
         mockRecords[instanceId] = invocations
