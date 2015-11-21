@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.source = { :git => 'https://github.com/DeliciousRaspberryPi/MockFive.git', :tag => s.version }
 
   s.ios.deployment_target = '8.0'
-  s.source_files = 'MockFive/*.swift'
+  s.source_files = 'MockFive/*'
   s.requires_arc = true
 end
 
