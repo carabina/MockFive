@@ -63,6 +63,8 @@ private func stringify(function: String, arguments: [Any?]) -> String {
         
         invocation += ")"
         
+        
+        
         if argumentLabels.count - 1 != arguments.count {
             invocation += " (Expected \(argumentLabels.count - 1), got \(arguments.count))"
         }

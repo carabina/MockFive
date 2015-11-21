@@ -32,7 +32,9 @@ struct MyAwesomeMock: Mock, MockworthyProtocol {
         return mock() { Int(rand()) } // Closure stub
     }
     
-    func complex(arg1 arg1: Int, model: MyCustomModel, others: Any...) -> (a: Int, b: Int) { return mock(arg1, model.id, others, returns: (7, 9)) }
+    func complex(arg1 arg1: Int, model: MyCustomModel, others: Any...) -> (a: Int, b: Int) {
+        return mock(arg1, model.id, others, returns: (7, 9)) // Use printable values for nice output ('model.id', not 'model')
+    }
 }
 
 var myMock = MyAwesomeMock()
@@ -71,3 +73,4 @@ class MyModelMockID: MyModel {
 
 var myClassMock = MyModelMockID()
 myClassMock.modelDesignator()
+myClassMock.invocations[0]
