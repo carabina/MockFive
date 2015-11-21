@@ -33,7 +33,6 @@ struct MockStructOfMockworthyProtocol: Mock, MockworthyProtocol {
     }
     
     func oneArgVariadic(arg: Int..., otherArg: String) {
-        print(arg)
         mock(arg)
     }
     
@@ -46,11 +45,11 @@ struct MockStructOfMockworthyProtocol: Mock, MockworthyProtocol {
     }
     
     func takesAFewFirstRequired(arg arg: Int, otherArg: Int) {
-        return mock()
+        return mock(arg, otherArg)
     }
     
     func twoArgVariadic(arg: Int..., otherArg: String) {
-        return mock()
+        return mock(arg, otherArg)
     }
     
     func oneArgVariadic(arg: Int...) {
@@ -63,8 +62,7 @@ myMock.noReturn()
 myMock.empty()
 myMock.oneArg(7)
 myMock.oneArgRequiredName(arg: 0)
-myMock.oneArgVariadic(8, 9, 10, otherArg: "Marley")
-myMock.takesClosure({})
+myMock.oneArgVariadic(8, 97, 10, otherArg: "Marley")
 myMock.takesAFew(1, otherArg: 8, stillOther: 33)
 myMock.takesAFewFirstRequired(arg: 0, otherArg: 23)
 myMock.twoArgVariadic(2, 3, 4, otherArg: "Bob")
@@ -73,8 +71,8 @@ myMock.invocations[0]
 myMock.invocations[1]
 myMock.invocations[2]
 myMock.invocations[3]
-myMock.invocations[4]
+myMock.invocations[4] // Fucked on purpose
 myMock.invocations[5]
 myMock.invocations[6]
 myMock.invocations[7]
-myMock.invocations[8]
+//myMock.invocations[8]

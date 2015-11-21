@@ -12,8 +12,12 @@ public protocol Mock {
 
 extension Mock {
     public var invocations: [String] { get { return mockRecords[instanceId] ?? [] } set(new) { mockRecords[instanceId] = new } }
+    public func mock(arguments: Any?..., function: String = __FUNCTION__) { mockActual(function, arguments: arguments) }
+    public func mock<T>(arguments: Any?..., returns: T, function: String = __FUNCTION__) -> T { mockActual(function, arguments: arguments); return returns }
+    public func mock<T: NilLiteralConvertible>(arguments: Any?..., function: String = __FUNCTION__) -> T { mockActual(function, arguments: arguments); return nil }
+    public func mock<T>(arguments: Any?..., function: String = __FUNCTION__, returns: () -> T) -> T { mockActual(function, arguments: arguments); return returns() }
     
-    private func mockActual(arguments: [Any?], function: String) {
+    private func mockActual(function: String, arguments: [Any?]) {
         var invocation = ""
         var invocations = [String]()
         let arguments = arguments.map { $0 ?? "nil" } as [Any]
@@ -23,37 +27,32 @@ extension Mock {
         } else if let _ = function.rangeOfString("()") {
             invocation += function
         } else {
+            let startIndex = function.rangeOfString("(")!.endIndex
+            let endIndex = function.rangeOfString(")")!.startIndex
+            invocation += function.substringToIndex(startIndex)
             
+            let argumentLabels = function.substringWithRange(Range(start: startIndex, end: endIndex)).componentsSeparatedByString(":")
+            for i in 0..<argumentLabels.count {
+                invocation += argumentLabels[i]
+                if i < arguments.count { invocation += ": \(arguments[i]), " }
+            }
+            
+            if ", " == invocation.substringFromIndex(invocation.endIndex.advancedBy(-2)) {
+                invocation = invocation.substringToIndex(invocation.endIndex.advancedBy(-2))
+            } else {
+                invocation += ":"
+            }
+            
+            invocation += ")"
+            
+            if argumentLabels.count - 1 != arguments.count {
+                invocation += " (Expected \(argumentLabels.count - 1), got \(arguments.count))"
+            }
         }
-        
-        let functionStrings = function.componentsSeparatedByCharactersInSet(NSCharacterSet(charactersInString: "(:"))
-        var accumulatorString = functionStrings.first!
-        for i in 0..<functionStrings.count {
-            accumulatorString += functionStrings[i]
-            if i < arguments.count { accumulatorString += ": \(arguments[i] ?? "nil"), " }
-        }
-        
-        //            if let firstArgumentRange = accumulatorString.rangeOfCharacterFromSet(NSCharacterSet(charactersInString: ":")) {
-        //                let replacementRange = Range(start: firstArgumentRange.startIndex, end: firstArgumentRange.endIndex.advancedBy(1))
-        //                accumulatorString.replaceRange(replacementRange, with: "(")
-        //            }
-        
-        //            if functionStrings.count - 2 != arguments.count {
-        //                accumulatorString += " \()"
-        //                accumulatorString += " (expected \(functionStrings.count - 1) args, got \(arguments.count)"
-        //            }
-        
-        //            invocations.append(accumulatorString)
-        invocations.append(function)
-        
+        invocations.append(invocation)
         if let existingInvocations = mockRecords[instanceId] { invocations = existingInvocations + invocations }
         mockRecords[instanceId] = invocations
     }
-    
-    public func mock(arguments: Any?..., function: String = __FUNCTION__) { mockActual(arguments, function: function) }
-    public func mock<T>(arguments: Any?..., returns: T, function: String = __FUNCTION__) -> T { mockActual(arguments, function: function); return returns }
-    public func mock<T: NilLiteralConvertible>(arguments: Any?..., function: String = __FUNCTION__) -> T { mockActual(arguments, function: function); return nil }
-    public func mock<T>(arguments: Any?..., function: String = __FUNCTION__, returns: () -> T) -> T { mockActual(arguments, function: function); return returns() }
 }
 
 public func lock(signature: String = __FILE__ + ":\(__LINE__):\(OSAtomicIncrement32(&globalObjectIDIndex))") -> String { return signature }
