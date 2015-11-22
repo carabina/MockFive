@@ -8,7 +8,7 @@ protocol StringConcatenator {
 }
 
 struct MockStringConcatenator: StringConcatenator, Mock {
-    let mockFiveLock = "TestTrack.playground:11" // In non-playground, use 'lock()'
+    let mockFiveLock = lock()
     func concatenateString(first: String, second: String) -> String { return mock(first, second) { "Stub Value" } }
 }
 
@@ -34,7 +34,7 @@ myMockClass.invocations                                  // [ "concatenateString
 
 
 
-
+// Class mocking
 
 struct CustomModel { var id: Int }
 
@@ -44,7 +44,7 @@ protocol MockworthyProtocol {
 }
 
 struct MockImplementation: MockworthyProtocol, Mock {
-    let mockFiveLock = ""//lock()
+    let mockFiveLock = lock()
     
     func method() {
         mock()

@@ -10,9 +10,7 @@ public protocol Mock {
 }
 
 extension Mock {
-    static public func reset() { globalObjectIDIndex = 0; mockRecords = [:] }
     public var invocations: [String] { get { return mockRecords[mockFiveLock] ?? [] } set(new) { mockRecords[mockFiveLock] = new } }
-    public func lock(signature: String = __FILE__ + ":\(__LINE__):\(OSAtomicIncrement32(&globalObjectIDIndex))") -> String { return signature }
     
     public func mock(arguments: Any?..., function: String = __FUNCTION__) { logInvocation(stringify(function, arguments: arguments, returnType: .None)) }
     public func mock<T: NilLiteralConvertible>(arguments: Any?..., function: String = __FUNCTION__) -> T { logInvocation(stringify(function, arguments: arguments, returnType: "\(T.self)")); return nil }
@@ -26,6 +24,8 @@ extension Mock {
     }
 }
 
+public func resetMockFive() { globalObjectIDIndex = 0; mockRecords = [:] }
+public func lock(signature: String = __FILE__ + ":\(__LINE__):\(OSAtomicIncrement32(&globalObjectIDIndex))") -> String { return signature }
 private var globalObjectIDIndex: Int32 = 0
 private var mockRecords: [String:[String]] = [:]
 
@@ -41,28 +41,32 @@ private func stringify(function: String, arguments: [Any?], returnType: String?)
     let arguments = arguments.map { $0 ?? "nil" } as [Any]
     if .None == function.rangeOfCharacterFromSet(NSCharacterSet(charactersInString: "()")) {
         invocation = function + "(\(arguments.first ?? "nil"))"
+        if let returnType = returnType { invocation += " -> \(returnType)" }
     } else if let _ = function.rangeOfString("()") {
         invocation = function
+        if let returnType = returnType { invocation += " -> \(returnType)" }
     } else {
         let startIndex = function.rangeOfString("(")!.endIndex
         let endIndex = function.rangeOfString(")")!.startIndex
         invocation += function.substringToIndex(startIndex)
         
         let argumentLabels = function.substringWithRange(Range(start: startIndex, end: endIndex)).componentsSeparatedByString(":")
-        for i in 0..<argumentLabels.count {
-            invocation += argumentLabels[i]
-            if i < arguments.count { invocation += ": \(arguments[i]), " }
+        for i in 0..<argumentLabels.count - 1 {
+            invocation += argumentLabels[i] + ": "
+            if (i < arguments.count) { invocation += "\(arguments[i])" }
+            invocation += ", "
         }
-        
-        if ", " == invocation.substringFromIndex(invocation.endIndex.advancedBy(-2)) {
-            invocation = invocation.substringToIndex(invocation.endIndex.advancedBy(-2))
-        } else {
-            invocation += ":"
+        invocation = invocation.substringToIndex(invocation.endIndex.advancedBy(-2)) + ")"
+        if let returnType = returnType { invocation += " -> \(returnType)" }
+        if argumentLabels.count - 1 != arguments.count {
+            invocation += " [Expected \(argumentLabels.count - 1), got \(arguments.count)"
+            if argumentLabels.count < arguments.count {
+                let remainder = arguments[argumentLabels.count - 1..<arguments.count]
+                let roughArguments = remainder.reduce(": ", combine: { $0 + "\($1), " })
+                invocation += roughArguments.substringToIndex(roughArguments.endIndex.advancedBy(-2))
+            }
+            invocation += "]"
         }
-        
-        invocation += ")"
-        if argumentLabels.count - 1 != arguments.count { invocation += " (Expected \(argumentLabels.count - 1), got \(arguments.count))" }
     }
-    if let returnType = returnType { invocation += " -> \(returnType)" }
     return invocation
 }
