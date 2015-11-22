@@ -2,7 +2,6 @@ import MockFive
 
 
 // Protocol mocking
-
 protocol StringConcatenator {
     func concatenateString(first: String, second: String) -> String
 }
@@ -13,8 +12,8 @@ struct MockStringConcatenator: StringConcatenator, Mock {
 }
 
 var myMock = MockStringConcatenator()
-myMock.concatenateString("first", second: "second") // "Stub Value"
-myMock.invocations                                  // [ "concatenateString(_: first, second: second) -> String" ]
+myMock.concatenateString("first", second: "second")
+myMock.invocations
 
 
 // Class mocking
@@ -29,37 +28,7 @@ class MockStringConcatenatorClass: StringConcatenatorClass, Mock {
 }
 
 var myMockClass = MockStringConcatenatorClass()
-myMockClass.concatenateString("first", second: "second") // "Stub Value"
-myMockClass.invocations                                  // [ "concatenateString(_: first, second: second) -> String" ]
+myMockClass.concatenateString("first", second: "second")
+myMockClass.invocations
 
 
-
-// Class mocking
-
-struct CustomModel { var id: Int }
-
-protocol MockworthyProtocol {
-    func method()
-    func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> String
-}
-
-struct MockImplementation: MockworthyProtocol, Mock {
-    let mockFiveLock = lock()
-    
-    func method() {
-        mock()
-    }
-    
-    func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> String {
-        return mock(arg, model.id, others) { "stub string" }
-    }
-}
-
-var mock = MockImplementation()
-mock.method()
-mock.method()
-mock.complexMethod(7, model: CustomModel(id: 982), others: 7, nil, 0.23, [0,9])
-
-mock.invocations[0]
-mock.invocations[1]
-mock.invocations[2]
