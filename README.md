@@ -1,14 +1,43 @@
 # MockFive
-Use `mock()` to generate stub functions mocks with attractive invocation records.
+Use `mock()` to generate stub functions mocks with attractive invocation records for classes and structs.  Just conform to `Mock`, add `let mockFiveLock = lock()` to your struct or subclass, and begin mocking!
 
+Protocol Mocking
 ```Swift
-mock(Arg...)                   // Void return value
-mock(Arg..., returns: T)       // Static return value
-mock(Arg...) { () -> T in }    // Closure return value
+import MockFive
 
-// Access record of called methods through 'invocations' property
-var myMock: Mock = someMockObject
-myMock.invocations // [ 'function(_: argumentValue, otherArgument: secondArgumentValue)', 'functonWithNoArgs()', 'shortFunc()' ]
+protocol StringConcatenator {
+    func concatenateString(first: String, second: String) -> String
+}
+
+struct MockStringConcatenator: StringConcatenator, Mock {
+    let mockFiveLock = lock()
+    func concatenateString(first: String, second: String) -> String { return mock(first, second) { "Stub Value" } }
+}
+
+var myMock = MockStringConcatenator()
+myMock.concatenateString("first", second: "second") // "Stub Value"
+myMock.invocations                                  // [ "concatenateString(_: first, second: second) -> String" ]
+
+```
+
+Class Mocking
+```
+// Class mocking
+import MockFive
+
+class StringConcatenatorClass {
+    func concatenateString(first: String, second: String) -> String { return first + second }
+}
+
+class MockStringConcatenatorClass: StringConcatenatorClass, Mock {
+    let mockFiveLock = lock()
+    override func concatenateString(first: String, second: String) -> String { return mock(first, second) { "Stub Value" } }
+}
+
+var myMockClass = MockStringConcatenatorClass()
+myMockClass.concatenateString("first", second: "second") // "Stub Value"
+myMockClass.invocations                                  // [ "concatenateString(_: first, second: second) -> String" ]
+
 ```
 
 # Mock Functions, Not Objects and Structs
@@ -19,44 +48,34 @@ By providing 'mock functions' instead of 'mock objects', MockFive plays nice wit
 ```Swift
 import MockFive
 
-// Protocol
+struct CustomModel { var id: Int }
+
 protocol MockworthyProtocol {
-  func method()
-  func complexMethod(arg: Int, model: CustomModel, others: Any...) -> String
+    func method()
+    func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> String
 }
 
-override func spec() { // Assuming Quick-style specs
-  // Protocol mock
-  struct MyProtocolMock: Mock, MockworthyProtocol {
-    let instanceId = lock()
-
-    func method() { mock() }
-    func complexMethod(arg: Int, model: CustomModel, others: Any...) -> String {
-      return mock(arg, model.modelIDString, others, returns: "Graham")
+struct MockImplementation: MockworthyProtocol, Mock {
+    let mockFiveLock = ""//lock()
+    
+    func method() {
+        mock()
     }
-  }
-  
-  var mock = MyProtocolMock()
-  // Inject mock, do tests here...
+    
+    func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> String {
+        return mock(arg, model.id, others) { "stub string" }
+    }
 }
 
-// Class
-class MyCustomModel {
-  var name: String
-  var id: String
-  func identifier() -> String { return "\(name):\(id)" }
-}
+var mock = MockImplementation()
+mock.method()
+mock.method()
+mock.complexMethod(7, model: CustomModel(id: 982), others: 7, nil, 0.23, [0,9])
 
-override func spec() { // Assuming Quick-style specs
-  // Class Mock
-  extension MyCustomModelMock: Mock {}
-  class MyCustomModelMock: MyModel {
-    override func identifier() -> String { mock(returns: "identifierString") }
-  }
-  
-  var mock = MyCustomModelMock()
-  // Inject mock, do tests here...
-}
+mock.invocations[0] // "method()"
+mock.invocations[1] // "method()"
+mock.invocations[2] // "complexMethod(_: 7, model: 982, others: [Optional(7), nil, Optional(0.23), Optional([0, 9])]) -> String"
+
 ```
 
 For more examples, see TestTrack.playground in project!
