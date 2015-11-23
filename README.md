@@ -1,5 +1,5 @@
 # MockFive
-Use `mock()` to generate stub functions mocks with attractive invocation records for classes and structs.  Just conform to `Mock`, add `let mockFiveLock = lock()` to your struct or subclass, and begin mocking!
+Use `mock()` to generate stub functions mocks with attractive invocation recording.  Just conform to `Mock`, add `let mockFiveLock = lock()` to your struct or subclass, and begin mocking!
 
 # Installation
 Use MockFive through cocoapods as `pod 'MockFive'`, or drag `MockFive.swift` from the `MockFive` folder into your project.
