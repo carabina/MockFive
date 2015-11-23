@@ -4,9 +4,12 @@ Use `mock()` to generate stub functions mocks with attractive invocation records
 # Installation
 Use MockFive through cocoapods as `pod 'MockFive'`, or drag `MockFive.swift` from the `MockFive` folder into your project.
 
-# Mock Functions, Not Objects and Structs
-Traditional mocking frameworks think in terms of getting a 'mock object'.  This doesn't work well with Swift's strict typing.  Instead, MockFive lets you quickly write a stub.  MockFive will log all invocations of those functions. By providing 'mock functions' instead of 'mock objects', MockFive plays nice with the typing system and delivers an exceptionally clean testing experience without compromising the correctness of production code.
+# Mock Functions, Not Objects
+Frameworks like Cedar and OCMock work in terms of yielding 'mock objects'.  In Swift, this doesn't work well with strict typing.  Since these structures need to be available at compile-time, any system of mocking must make use of protocol implementations and subclassing.
 
+MockFive provides a simple, convenient means of stubbing method implementations.  These stubs provide attractive invocation logging with arguments, and since closures are used for method bodies, variables may be cleanly captured from the surrounding scope in which the mock is defined.
+
+# Examples
 Protocol Mocking
 ```Swift
 import MockFive
@@ -64,6 +67,6 @@ mock.invocations[0] // "method()"
 mock.invocations[1] // "complexMethod(_: 7, model: 982, others: [Optional(7), nil, Optional(0.23), Optional([0, 9])]) -> (Int, String)"
 
 ```
-For more examples, see TestTrack.playground in project!
+See these examples in the TestTrack.playground in project!
 
 
