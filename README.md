@@ -1,13 +1,10 @@
-# MockFive
-Use `mock()` to generate stub functions mocks with attractive invocation recording.  Just conform to `Mock`, add `let mockFiveLock = lock()` to your struct or subclass, and begin mocking!
+# MockFive Installation and Use
+Add `pod 'MockFive'` to your Podfile or drag `MockFive.swift` from the `MockFive` folder into your project.
 
-# Installation
-Use MockFive through cocoapods as `pod 'MockFive'`, or drag `MockFive.swift` from the `MockFive` folder into your project.
+Make your mock object conform to `Mock` and add `let mockFiveLock = lock()` anywhere in the struct or class body.  Now you can begin using `mock()`!  Call `mock()` within a function body to record its invocation in `myMockObject.invocations`.
 
-# Mock Functions, Not Objects
-Frameworks like Cedar and OCMock work in terms of yielding 'mock objects'.  In Swift, this doesn't work well with strict typing.  Since these structures need to be available at compile-time, any system of mocking must make use of protocol implementations and subclassing.
-
-MockFive provides a simple, convenient means of stubbing method implementations.  These stubs provide attractive invocation logging with arguments, and since closures are used for method bodies, variables may be cleanly captured from the surrounding scope in which the mock is defined.
+# Manual Mocking Made Easier
+The most common task for a mock object is to report what functions have been invoked on it.  Because it relies on reflection, using the `mock()` method ensures that testing strings always match production code.  The `Mock` protocol may be adopted by both protocol mocks and class mocks.
 
 # Examples
 Protocol Mocking
@@ -26,7 +23,8 @@ struct MockImplementation: MockworthyProtocol, Mock {
     
     func method() { mock() }
     func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) {
-        return mock(arg, model.id, others) { (37, "stub string") }
+        mock(arg, model.id, others)
+        return (37, "stub string")
     }
 }
 
@@ -55,7 +53,8 @@ struct MockImplementation: MockworthyClass, Mock {
     
     func method() { mock() }
     func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) {
-        return mock(arg, model.id, others) { (37, "stub string") }
+        mock(arg, model.id, others)
+        return (37, "stub string")
     }
 }
 
