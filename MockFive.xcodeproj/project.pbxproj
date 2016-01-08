@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		B7CE7058D8BD27C779F2E7B5 /* Pods_MockFiveTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 785B82AE5F1C20AB679C9D0D /* Pods_MockFiveTests.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		F82322131C0034D000AE0551 /* MockFive.h in Headers */ = {isa = PBXBuildFile; fileRef = F82322121C0034D000AE0551 /* MockFive.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F823221A1C0034D000AE0551 /* MockFive.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F823220F1C0034D000AE0551 /* MockFive.framework */; };
 		F823221F1C0034D000AE0551 /* MockFiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F823221E1C0034D000AE0551 /* MockFiveTests.swift */; };
 		F823222A1C0034DF00AE0551 /* MockFive.swift in Sources */ = {isa = PBXBuildFile; fileRef = F82322291C0034DF00AE0551 /* MockFive.swift */; };
@@ -29,7 +28,6 @@
 		785B82AE5F1C20AB679C9D0D /* Pods_MockFiveTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MockFiveTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E4AFBDD7CA88A579CCF8DA9 /* Pods-MockFiveTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MockFiveTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-MockFiveTests/Pods-MockFiveTests.release.xcconfig"; sourceTree = "<group>"; };
 		F823220F1C0034D000AE0551 /* MockFive.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MockFive.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		F82322121C0034D000AE0551 /* MockFive.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MockFive.h; sourceTree = "<group>"; };
 		F82322141C0034D000AE0551 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F82322191C0034D000AE0551 /* MockFiveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MockFiveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F823221E1C0034D000AE0551 /* MockFiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockFiveTests.swift; sourceTree = "<group>"; };
@@ -99,7 +97,6 @@
 		F82322111C0034D000AE0551 /* MockFive */ = {
 			isa = PBXGroup;
 			children = (
-				F82322121C0034D000AE0551 /* MockFive.h */,
 				F82322141C0034D000AE0551 /* Info.plist */,
 				F82322291C0034DF00AE0551 /* MockFive.swift */,
 			);
@@ -122,7 +119,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F82322131C0034D000AE0551 /* MockFive.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

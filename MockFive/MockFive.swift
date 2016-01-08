@@ -4,18 +4,64 @@ public protocol Mock {
     var mockFiveLock: String { get }
     var invocations: [String] { get set }
     
-    func mock(arguments: Any?..., function: String)
-    func mock<T>(arguments: Any?..., function: String, returns: () -> T) -> T
-    func mock<T: NilLiteralConvertible>(arguments: Any?..., function: String) -> T
+    func resetMock()
+    
+    func unregister(identifier: String)
+    func registerStub<T>(identifier: String, stub: () -> T)
+    
+    func mock(identifier identifier: String, arguments: Any?..., function: String, stub: () -> ())
+    func mock<T>(identifier identifier: String, arguments: Any?..., function: String, stub: () -> T) -> T
+    func mock<T: NilLiteralConvertible>(identifier identifier: String, arguments: Any?..., function: String, stub: () -> T) -> T
 }
 
 extension Mock {
     public var invocations: [String] { get { return mockRecords[mockFiveLock] ?? [] } set(new) { mockRecords[mockFiveLock] = new } }
     
-    public func mock(arguments: Any?..., function: String = __FUNCTION__) { logInvocation(stringify(function, arguments: arguments, returnType: .None)) }
-    public func mock<T: NilLiteralConvertible>(arguments: Any?..., function: String = __FUNCTION__) -> T { logInvocation(stringify(function, arguments: arguments, returnType: "\(T.self)")); return nil }
-    public func mock<T>(arguments: Any?..., function: String = __FUNCTION__, returns: () -> T) -> T { logInvocation(stringify(function, arguments: arguments, returnType: "\(T.self)")); return returns() }
+    public func resetMock() {
+        mockRecords[mockFiveLock] = []
+        mockBlocks[mockFiveLock] = [:]
+    }
     
+    public func unregister(identifier: String) {
+        var blocks = mockBlocks[mockFiveLock] ?? [:] as [String:Any]
+        blocks.removeValueForKey(identifier)
+        mockBlocks[mockFiveLock] = blocks
+    }
+    
+    public func registerStub<T>(identifier: String, stub: () -> T) {
+        var blocks = mockBlocks[mockFiveLock] ?? [:] as [String:Any]
+        blocks[identifier] = stub
+        mockBlocks[mockFiveLock] = blocks
+    }
+    
+    public func mock(identifier identifier: String, arguments: Any?..., function: String = __FUNCTION__, stub: () -> () = {}) {
+        logInvocation(stringify(function, arguments: arguments, returnType: .None))
+        if let registeredStub = mockBlocks[mockFiveLock]?[identifier] {
+            guard let typecastStub = registeredStub as? () -> () else { fatalError("MockFive: Incompatible block of type '\(registeredStub.dynamicType)' registered for method '\(identifier)' requiring block type '() -> ()'") }
+            typecastStub()
+        }
+        else { stub() }
+    }
+    
+    public func mock<T: NilLiteralConvertible>(identifier identifier: String, arguments: Any?..., function: String = __FUNCTION__, stub: () -> T = { () -> T in return nil }) -> T {
+        logInvocation(stringify(function, arguments: arguments, returnType: "\(T.self)"))
+        if let registeredStub = mockBlocks[mockFiveLock]?[identifier] {
+            guard let typecastStub = registeredStub as? () -> T else { fatalError("MockFive: Incompatible block of type '\(registeredStub.dynamicType)' registered for method '\(identifier)' requiring block type '() -> \(T.self)'") }
+            return typecastStub()
+        }
+        else { return stub() }
+    }
+    
+    public func mock<T>(identifier identifier: String, arguments: Any?..., function: String = __FUNCTION__, stub: () -> T) -> T {
+        logInvocation(stringify(function, arguments: arguments, returnType: "\(T.self)"))
+        if let registeredStub = mockBlocks[mockFiveLock]?[identifier] {
+            guard let typecastStub = registeredStub as? () -> T else { fatalError("MockFive: Incompatible block of type '\(registeredStub.dynamicType)' registered for method '\(identifier)' requiring block type '() -> \(T.self)'") }
+            return typecastStub()
+        }
+        else { return stub() }
+    }
+    
+    // Utility stuff
     private func logInvocation(invocation: String) {
         var invocations = [String]()
         invocations.append(invocation)
@@ -24,10 +70,8 @@ extension Mock {
     }
 }
 
-public func resetMockFive() { globalObjectIDIndex = 0; mockRecords = [:] }
+public func resetMockFive() { globalObjectIDIndex = 0; mockRecords = [:]; mockBlocks = [:] }
 public func lock(signature: String = __FILE__ + ":\(__LINE__):\(OSAtomicIncrement32(&globalObjectIDIndex))") -> String { return signature }
-private var globalObjectIDIndex: Int32 = 0
-private var mockRecords: [String:[String]] = [:]
 
 func + <T, U> (left: [T:U], right: [T:U]) -> [T:U] {
     var result: [T:U] = [:]
@@ -35,6 +79,11 @@ func + <T, U> (left: [T:U], right: [T:U]) -> [T:U] {
     for (k, v) in right { result.updateValue(v, forKey: k) }
     return result
 }
+
+// Private
+private var globalObjectIDIndex: Int32 = 0
+private var mockRecords: [String:[String]] = [:]
+private var mockBlocks: [String:[String:Any]] = [:]
 
 private func stringify(function: String, arguments: [Any?], returnType: String?) -> String {
     var invocation = ""
@@ -69,4 +118,21 @@ private func stringify(function: String, arguments: [Any?], returnType: String?)
         }
     }
     return invocation
+}
+
+// Testing
+@noreturn func fatalError(@autoclosure message: () -> String = "", file: StaticString = __FILE__, line: UInt = __LINE__) {
+    FatalErrorUtil.fatalErrorClosure(message(), file, line)
+    unreachable()
+}
+
+@noreturn func unreachable() {
+    repeat { NSRunLoop.currentRunLoop().run() } while (true)
+}
+
+struct FatalErrorUtil {
+    static var fatalErrorClosure: (String, StaticString, UInt) -> () = defaultFatalErrorClosure
+    private static let defaultFatalErrorClosure = { Swift.fatalError($0, file: $1, line: $2) }
+    static func replaceFatalError(closure: (String, StaticString, UInt) -> ()) { fatalErrorClosure = closure }
+    static func restoreFatalError() { fatalErrorClosure = defaultFatalErrorClosure }
 }
