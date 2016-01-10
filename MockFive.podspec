@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'MockFive'
-  s.version = '0.02'
+  s.version = '0.03'
   s.license = 'MIT'
   s.summary = 'A mock functions framework for Swift'
   s.homepage = 'https://github.com/DeliciousRaspberryPi/MockFive'
