@@ -21,9 +21,9 @@ protocol MockworthyProtocol {
 struct MockImplementation: MockworthyProtocol, Mock {
     let mockFiveLock = lock()
     
-    func method() { mock(identifier: "method") }
+    func method() { stub(identifier: "method") }
     func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) {
-        mock(identifier: "complexMethod", args: arg, model.id, others) { (37, "stub string") }
+        return stub(identifier: "complexMethod", arguments: arg, model.id, others) { (37, "stub string") }
     }
 }
 
@@ -38,7 +38,7 @@ mock.invocations[1] // "complexMethod(_: 7, model: 982, others: [Optional(7), ni
 
 // Function stubbing
 mock.registerStub("complexMethod") { (90, "Total \(42 + 9)") }
-mock.complexMethod(9, model: custom) // (90, "Total 51")
+mock.complexMethod(9, model: CustomModel(id: 7)) // (90, "Total 51")
 ```
 
 Class Mocking
@@ -49,20 +49,20 @@ struct CustomModel { var id: Int }
 
 class MockworthyClass {
     func method() {}
-    func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) { return (9 "potatos") }
+    func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) { return (9, "potatos") }
 }
 
-struct MockImplementation: MockworthyClass, Mock {
+class MockwortheClassMock: MockworthyClass, Mock {
     let mockFiveLock = lock()
     
-    func method() { mock() }
-    func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) {
-        return mock(arg, model.id, others) { super.complexMethod(arg, model: model, others: others) }
+    override func method() { stub(identifier: "method") { super.method() } }
+    override func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) {
+        return stub(identifier: "complexMethod", arguments: arg, model.id, others) { super.complexMethod(arg, model: model, others: others) }
     }
 }
 
 // Invocation records
-var mock = MockImplementation()
+var mock = MockwortheClassMock()
 mock.method()
 mock.complexMethod(7, model: CustomModel(id: 982), others: 7, nil, 0.23, [0,9]) // (37, "stub string")
 
@@ -71,7 +71,7 @@ mock.invocations[1] // "complexMethod(_: 7, model: 982, others: [Optional(7), ni
 
 // Function stubbing
 mock.registerStub("complexMethod") { (90, "Total \(42 + 9)") }
-mock.complexMethod(9, model: custom) // (90, "Total 51")
+mock.complexMethod(9, model: CustomModel(id: 9)) // (90, "Total 51")
 ```
 See more examples in `TestTrack.playground` in the project!
 
