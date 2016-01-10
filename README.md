@@ -48,8 +48,8 @@ import MockFive
 struct CustomModel { var id: Int }
 
 class MockworthyClass {
-    func method()
-    func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String)
+    func method() {}
+    func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) { return (9 "potatos") }
 }
 
 struct MockImplementation: MockworthyClass, Mock {
@@ -57,7 +57,7 @@ struct MockImplementation: MockworthyClass, Mock {
     
     func method() { mock() }
     func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) {
-        return mock(arg, model.id, others) { (37, "stub string") }
+        return mock(arg, model.id, others) { super.complexMethod(arg, model: model, others: others) }
     }
 }
 
