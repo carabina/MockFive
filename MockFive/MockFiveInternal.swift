@@ -1,64 +1,50 @@
 import Foundation
 
-public protocol Mock {
-    var mockFiveLock: String { get }
-    var invocations: [String] { get set }
-    
-    func resetMock()
-    
-    func unregister(identifier: String)
-    func registerStub<T>(identifier: String, stub: () -> T)
-    
-    func mock(identifier identifier: String, arguments: Any?..., function: String, stub: () -> ())
-    func mock<T>(identifier identifier: String, arguments: Any?..., function: String, stub: () -> T) -> T
-    func mock<T: NilLiteralConvertible>(identifier identifier: String, arguments: Any?..., function: String, stub: () -> T) -> T
-}
-
 extension Mock {
-    public var invocations: [String] { get { return mockRecords[mockFiveLock] ?? [] } set(new) { mockRecords[mockFiveLock] = new } }
+    private(set) public var invocations: [String] { get { return mockRecords[mockFiveLock] ?? [] } set(new) { mockRecords[mockFiveLock] = new } }
     
     public func resetMock() {
         mockRecords[mockFiveLock] = []
         mockBlocks[mockFiveLock] = [:]
     }
     
-    public func unregister(identifier: String) {
+    public func unregisterStub(identifier: String) {
         var blocks = mockBlocks[mockFiveLock] ?? [:] as [String:Any]
         blocks.removeValueForKey(identifier)
         mockBlocks[mockFiveLock] = blocks
     }
     
-    public func registerStub<T>(identifier: String, stub: () -> T) {
+    public func registerStub<T>(identifier: String, returns: () -> T) {
         var blocks = mockBlocks[mockFiveLock] ?? [:] as [String:Any]
-        blocks[identifier] = stub
+        blocks[identifier] = returns
         mockBlocks[mockFiveLock] = blocks
     }
     
-    public func mock(identifier identifier: String, arguments: Any?..., function: String = __FUNCTION__, stub: () -> () = {}) {
+    public func stub<T: NilLiteralConvertible>(identifier identifier: String, arguments: Any?..., function: String = __FUNCTION__, returns: () -> T = { nil }) -> T {
+        logInvocation(stringify(function, arguments: arguments, returnType: "\(T.self)"))
+        if let registeredStub = mockBlocks[mockFiveLock]?[identifier] {
+            guard let typecastStub = registeredStub as? () -> T else { fatalError("MockFive: Incompatible block of type '\(registeredStub.dynamicType)' registered for function '\(identifier)' requiring block type '() -> \(T.self)'") }
+            return typecastStub()
+        }
+        else { return returns() }
+    }
+    
+    public func stub<T>(identifier identifier: String, arguments: Any?..., function: String = __FUNCTION__, returns: () -> T) -> T {
+        logInvocation(stringify(function, arguments: arguments, returnType: "\(T.self)"))
+        if let registeredStub = mockBlocks[mockFiveLock]?[identifier] {
+            guard let typecastStub = registeredStub as? () -> T else { fatalError("MockFive: Incompatible block of type '\(registeredStub.dynamicType)' registered for function '\(identifier)' requiring block type '() -> \(T.self)'") }
+            return typecastStub()
+        }
+        else { return returns() }
+    }
+    
+    public func stub(identifier identifier: String, arguments: Any?..., function: String = __FUNCTION__, returns: () -> () = {}) {
         logInvocation(stringify(function, arguments: arguments, returnType: .None))
         if let registeredStub = mockBlocks[mockFiveLock]?[identifier] {
-            guard let typecastStub = registeredStub as? () -> () else { fatalError("MockFive: Incompatible block of type '\(registeredStub.dynamicType)' registered for method '\(identifier)' requiring block type '() -> ()'") }
+            guard let typecastStub = registeredStub as? () -> () else { fatalError("MockFive: Incompatible block of type '\(registeredStub.dynamicType)' registered for function '\(identifier)' requiring block type '() -> ()'") }
             typecastStub()
         }
-        else { stub() }
-    }
-    
-    public func mock<T: NilLiteralConvertible>(identifier identifier: String, arguments: Any?..., function: String = __FUNCTION__, stub: () -> T = { () -> T in return nil }) -> T {
-        logInvocation(stringify(function, arguments: arguments, returnType: "\(T.self)"))
-        if let registeredStub = mockBlocks[mockFiveLock]?[identifier] {
-            guard let typecastStub = registeredStub as? () -> T else { fatalError("MockFive: Incompatible block of type '\(registeredStub.dynamicType)' registered for method '\(identifier)' requiring block type '() -> \(T.self)'") }
-            return typecastStub()
-        }
-        else { return stub() }
-    }
-    
-    public func mock<T>(identifier identifier: String, arguments: Any?..., function: String = __FUNCTION__, stub: () -> T) -> T {
-        logInvocation(stringify(function, arguments: arguments, returnType: "\(T.self)"))
-        if let registeredStub = mockBlocks[mockFiveLock]?[identifier] {
-            guard let typecastStub = registeredStub as? () -> T else { fatalError("MockFive: Incompatible block of type '\(registeredStub.dynamicType)' registered for method '\(identifier)' requiring block type '() -> \(T.self)'") }
-            return typecastStub()
-        }
-        else { return stub() }
+        else { returns() }
     }
     
     // Utility stuff

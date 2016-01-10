@@ -1,43 +1,67 @@
 import MockFive
 
-// Protocol mocking
-protocol StringConcatenator {
-    func concatenateString(first: String, second: String) -> String?
+//MARK: Object-Oriented Example
+
+// --- Production File
+class ExampleClass {
+    func returnsOptional() -> String? { return "hamstrings" }
 }
 
-struct MockStringConcatenator: StringConcatenator, Mock {
-    let mockFiveLock = "A" // In non-playground, use 'lock()'
-    func concatenateString(first: String, second: String) -> String? { return mock(identifier: "concatenateString", arguments: first, second) }
+// --- Mock File (in test target)
+class ExampleClassMock: ExampleClass, Mock {
+    let mockFiveLock = "A" // use 'lock()' in non-playground
+    override func returnsOptional() -> String? { return stub(identifier: "returns optional") { super.returnsOptional() } }
 }
 
-var myMock = MockStringConcatenator()
+// --- Now, you can stub the method if you like, or use the default behavior in specs
+let myClassMock = ExampleClassMock()
 
-myMock.concatenateString("first", second: "second")
-myMock.invocations
+// Default behavior from super
+myClassMock.returnsOptional()
 
-myMock.registerStub("concatenateString") { "Stubbed return value" as String? }
-myMock.concatenateString("", second: "")
+// Pass an identifier and a closure to MockFive, and your closure will be invoked instead of the original implementation.
+var thingToReturn: String? = "not hamstrings"
+myClassMock.registerStub("returns optional") { thingToReturn }
+myClassMock.returnsOptional()
+
+thingToReturn = "some other value"
+myClassMock.returnsOptional()
+
+// Unregister mock, get default behavior
+myClassMock.unregisterStub("returns optional")
+myClassMock.returnsOptional()
 
 
-// Class mocking
 
-class StringConcatenatorClass {
-    func concatenateString(first: String, second: String) -> String? { return first + second }
+//MARK: Protocol-Oriented Example
+
+// --- Production file
+protocol ExampleProtocol {
+    func returnsVoid()
+    func returnsOptional() -> String?
+    func complex(string string: String, factors: Int...) -> (Float, Int)
 }
 
-class MockStringConcatenatorClass: StringConcatenatorClass, Mock {
-    let mockFiveLock = "B" // In non-playground, use 'lock()'
-    override func concatenateString(first: String, second: String) -> String? { return mock(identifier: "concatenateString", arguments: first, second) { "Default Value" } }
+// --- Mock file (in test target)
+struct ExampleProtocolMock: ExampleProtocol, Mock {
+    let mockFiveLock = "B" // use 'lock()' in non-playground
+    
+    func returnsVoid()                                                      { stub(identifier: "returns void") }
+    func returnsOptional() -> String?                                       { return stub(identifier: "returns optional") }
+    func complex(string string: String, factors: Int...) -> (Float, Int)    { return stub(identifier: "complex", arguments: string, factors) { (0.1, 7) } }
 }
 
-var myMockClass = MockStringConcatenatorClass()
 
-myMockClass.concatenateString("first", second: "second")
-myMockClass.invocations
+// --- Now, you can use your mock in any spec you choose.
+var myMock = ExampleProtocolMock()
 
-myMockClass.registerStub("concatenateString") { "Stubbed return value" as String? }
-myMockClass.concatenateString("", second: "")
+// Call some methods on your mock...
+myMock.returnsVoid()
+myMock.returnsOptional()
+myMock.complex(string: "inputString", factors: 7, 8, 9)
 
-myMockClass.unregister("concatenateString")
-myMock.concatenateString("", second: "")
+// ... and examine the log!
+let first = myMock.invocations[0]
+let second = myMock.invocations[1]
+let third = myMock.invocations[2]
 

@@ -12,19 +12,16 @@ protocol MockFiveTests: MyMockableProtocol, Mock {}
 
 struct TestMock: MockFiveTests {
     let mockFiveLock = lock()
-    func mySimpleMethod() { mock(identifier: "mySimpleMethod") }
-    func myOptionalMethod() -> String? { return mock(identifier: "myOptionalMethod") }
-    func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return mock(identifier: "myComplexMethod", arguments: description, price, accessories) { (7, "Fashion") } }
+    func mySimpleMethod() { stub(identifier: "mySimpleMethod") }
+    func myOptionalMethod() -> String? { return stub(identifier: "myOptionalMethod") }
+    func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return stub(identifier: "myComplexMethod", arguments: description, price, accessories) { (7, "Fashion") } }
 }
 
 class MockFiveSpecs: QuickSpec {
     override func spec() {
-        
         var mock: MockFiveTests = TestMock()
         
-        beforeEach {
-            mock.invocations = []
-        }
+        beforeEach { mock.resetMock() }
         
         describe("logging method calls") {
             context("when it's a simple call") {
@@ -55,7 +52,7 @@ class MockFiveSpecs: QuickSpec {
                         let mockFiveLock = lock()
                         func mySimpleMethod() {}
                         func myOptionalMethod() -> String? { return .None }
-                        func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return mock(identifier: "myComplexMethod", arguments: description) { (7, "Fashion") } }
+                        func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return stub(identifier: "myComplexMethod", arguments: description) { (7, "Fashion") } }
                     }
                     
                     beforeEach {
@@ -74,7 +71,7 @@ class MockFiveSpecs: QuickSpec {
                         let mockFiveLock = lock()
                         func mySimpleMethod() {}
                         func myOptionalMethod() -> String? { return .None }
-                        func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return mock(identifier: "myComplexMethod", arguments: description, price, accessories, "fruit", 9) { (7, "Fashion") } }
+                        func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return stub(identifier: "myComplexMethod", arguments: description, price, accessories, "fruit", 9) { (7, "Fashion") } }
                     }
                     
                     beforeEach {
@@ -111,7 +108,7 @@ class MockFiveSpecs: QuickSpec {
                     
                     describe("resetting the mock") {
                         beforeEach {
-                            testMock.unregister("myComplexMethod")
+                            testMock.unregisterStub("myComplexMethod")
                         }
                         
                         it("should return the default block's value") {
@@ -128,7 +125,7 @@ class MockFiveSpecs: QuickSpec {
                     }
                     
                     it("should throw a fatal error") {
-                        expect(fatalErrorString).toEventually(equal("MockFive: Incompatible block of type '() -> Int' registered for method 'myComplexMethod' requiring block type '() -> (Int, String)'"))
+                        expect(fatalErrorString).toEventually(equal("MockFive: Incompatible block of type '() -> Int' registered for function 'myComplexMethod' requiring block type '() -> (Int, String)'"))
                     }
                 }
             }
@@ -151,7 +148,7 @@ class MockFiveSpecs: QuickSpec {
                     
                     describe("resetting the mock") {
                         beforeEach {
-                            testMock.unregister("myOptionalMethod")
+                            testMock.unregisterStub("myOptionalMethod")
                         }
                         
                         it("should return nil") {
@@ -166,7 +163,7 @@ class MockFiveSpecs: QuickSpec {
                     }
                     
                     it("should throw a fatal error") {
-                        expect(fatalErrorString).toEventually(equal("MockFive: Incompatible block of type '() -> Int' registered for method 'myComplexMethod' requiring block type '() -> (Int, String)'"))
+                        expect(fatalErrorString).toEventually(equal("MockFive: Incompatible block of type '() -> Int' registered for function 'myComplexMethod' requiring block type '() -> (Int, String)'"))
                     }
                 }
             }
