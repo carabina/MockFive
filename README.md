@@ -22,7 +22,7 @@ struct MockImplementation: MockworthyProtocol, Mock {
     let mockFiveLock = lock()
     
     func method() { stub(identifier: "method") }
-    func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) {
+    func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) { _ -> (Int, String) in
         return stub(identifier: "complexMethod", arguments: arg, model.id, others) { (37, "stub string") }
     }
 }
@@ -56,7 +56,7 @@ class MockwortheClassMock: MockworthyClass, Mock {
     let mockFiveLock = lock()
     
     override func method() { stub(identifier: "method") { super.method() } }
-    override func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) {
+    override func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) { _ -> (Int, String) in
         return stub(identifier: "complexMethod", arguments: arg, model.id, others) { super.complexMethod(arg, model: model, others: others) }
     }
 }
