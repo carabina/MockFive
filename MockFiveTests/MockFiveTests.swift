@@ -4,7 +4,7 @@ import Nimble
 
 protocol MyMockableProtocol  {
     func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String)
-    func myOptionalMethod() -> String?
+    func myOptionalMethod(arg: Int) -> String?
     func mySimpleMethod()
 }
 
@@ -13,8 +13,8 @@ protocol MockFiveTests: MyMockableProtocol, Mock {}
 struct TestMock: MockFiveTests {
     let mockFiveLock = lock()
     func mySimpleMethod() { stub(identifier: "mySimpleMethod") }
-    func myOptionalMethod() -> String? { return stub(identifier: "myOptionalMethod") }
-    func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return stub(identifier: "myComplexMethod", arguments: description, price, accessories) { (7, "Fashion") } }
+    func myOptionalMethod(arg: Int) -> String? { return stub(identifier: "myOptionalMethod", arguments: arg) }
+    func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return stub(identifier: "myComplexMethod", arguments: description, price, accessories) { _ in (7, "Fashion") } }
 }
 
 class MockFiveSpecs: QuickSpec {
@@ -51,8 +51,8 @@ class MockFiveSpecs: QuickSpec {
                     struct TooFewTestMock: MockFiveTests {
                         let mockFiveLock = lock()
                         func mySimpleMethod() {}
-                        func myOptionalMethod() -> String? { return .None }
-                        func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return stub(identifier: "myComplexMethod", arguments: description) { (7, "Fashion") } }
+                        func myOptionalMethod(arg: Int) -> String? { return .None }
+                        func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return stub(identifier: "myComplexMethod", arguments: description) { _ in (7, "Fashion") } }
                     }
                     
                     beforeEach {
@@ -70,8 +70,8 @@ class MockFiveSpecs: QuickSpec {
                     struct TooManyTestMock: MockFiveTests {
                         let mockFiveLock = lock()
                         func mySimpleMethod() {}
-                        func myOptionalMethod() -> String? { return .None }
-                        func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return stub(identifier: "myComplexMethod", arguments: description, price, accessories, "fruit", 9) { (7, "Fashion") } }
+                        func myOptionalMethod(arg: Int) -> String? { return .None }
+                        func myComplexMethod(description: String?, price: Int, accessories: Any...) -> (Int, String) { return stub(identifier: "myComplexMethod", arguments: description, price, accessories, "fruit", 9) { _ in (7, "Fashion") } }
                     }
                     
                     beforeEach {
@@ -97,8 +97,24 @@ class MockFiveSpecs: QuickSpec {
             
             context("when the type does not conform to nilLiteralConvertible") {
                 context("when I have registered a closure of the correct type") {
+                    var arguments: [Any?]? = .None
+                    
                     beforeEach {
-                        testMock.registerStub("myComplexMethod") { (21, "string") }
+                        testMock.registerStub("myComplexMethod") { args -> (Int, String) in
+                            arguments = args
+                            return (21, "string")
+                        }
+                        testMock.myComplexMethod("", price: 1)
+                    }
+                    
+                    it("should pass the arguments to the closure") {
+                        if let description = arguments?[0] as? String {
+                            expect(description).to(equal(""))
+                        } else { fail() }
+                        
+                        if let price = arguments?[1] as? Int {
+                            expect(price).to(equal(1))
+                        } else { fail() }
                     }
                     
                     it("should return the registered closure's value") {
@@ -120,12 +136,12 @@ class MockFiveSpecs: QuickSpec {
                 
                 context("when I have registered a closure of the incorrect type") {
                     beforeEach {
-                        testMock.registerStub("myComplexMethod") { 7 }
+                        testMock.registerStub("myComplexMethod") { _ in return 7 }
                         fatalErrorDispatch({ testMock.myComplexMethod("", price: 1) })
                     }
                     
                     it("should throw a fatal error") {
-                        expect(fatalErrorString).toEventually(equal("MockFive: Incompatible block of type '() -> Int' registered for function 'myComplexMethod' requiring block type '() -> (Int, String)'"))
+                        expect(fatalErrorString).toEventually(equal("MockFive: Incompatible block of type 'Array<Optional<protocol<>>> -> Int' registered for function 'myComplexMethod' requiring block type '([Any?]) -> (Int, String)'"))
                     }
                 }
             }
@@ -133,17 +149,29 @@ class MockFiveSpecs: QuickSpec {
             context("when the type conforms to nil literal convertible") {
                 context("when I have not registered a closure") {
                     it("should return a default of nil") {
-                        expect(testMock.myOptionalMethod()).to(beNil())
+                        expect(testMock.myOptionalMethod(7)).to(beNil())
                     }
                 }
                 
                 context("when I have registered a closure of the correct type") {
+                    var arguments: [Any?]? = .None
+                    
                     beforeEach {
-                        testMock.registerStub("myOptionalMethod") { "string" as String? }
+                        testMock.registerStub("myOptionalMethod") { args -> String? in
+                            arguments = args
+                            return "string"
+                        }
+                        testMock.myOptionalMethod(7)
+                    }
+                    
+                    it("should pass the arguments to the closure") {
+                        if let arg = arguments?[0] as? Int {
+                            expect(arg).to(equal(7))
+                        } else { fail() }
                     }
                     
                     it("should return the closure value") {
-                        expect(testMock.myOptionalMethod()).to(equal("string"))
+                        expect(testMock.myOptionalMethod(7)).to(equal("string"))
                     }
                     
                     describe("resetting the mock") {
@@ -152,18 +180,18 @@ class MockFiveSpecs: QuickSpec {
                         }
                         
                         it("should return nil") {
-                            expect(testMock.myOptionalMethod()).to(beNil())
+                            expect(testMock.myOptionalMethod(7)).to(beNil())
                         }
                     }
                 }
                 
                 context("when I have registered a closure of the incorrect type") {
                     beforeEach {
-                        testMock.registerStub("myOptionalMethod") { 21 }
+                        testMock.registerStub("myOptionalMethod") { _ in 21 }
                     }
                     
                     it("should throw a fatal error") {
-                        expect(fatalErrorString).toEventually(equal("MockFive: Incompatible block of type '() -> Int' registered for function 'myComplexMethod' requiring block type '() -> (Int, String)'"))
+                        expect(fatalErrorString).toEventually(equal("MockFive: Incompatible block of type 'Array<Optional<protocol<>>> -> Int' registered for function 'myComplexMethod' requiring block type '([Any?]) -> (Int, String)'"))
                     }
                 }
             }
