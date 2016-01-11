@@ -74,7 +74,9 @@ class MockwortheClassMock: MockworthyClass, Mock {
     
     override func method() { stub(identifier: "method") { super.method() } }
     override func complexMethod(arg: Int, model: CustomModel, others: Any?...) -> (Int, String) { _ -> (Int, String) in
-        return stub(identifier: "complexMethod", arguments: arg, model.id, others) { super.complexMethod(arg, model: model, others: others) }
+        return stub(identifier: "complexMethod", arguments: arg, model.id, others) { 
+            super.complexMethod(arg, model: model, others: others) 
+        }
     }
 }
 
