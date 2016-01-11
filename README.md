@@ -1,10 +1,8 @@
 # MockFive Installation and Use
-Add `pod 'MockFive'` to your Podfile, or include both swift files from the `MockFive` directory to your project.
-
-Make your mock object conform to `Mock` and add `let mockFiveLock = lock()` anywhere in the struct or class.  Now you can begin using `mock()`!  Call `mock()` within a function body to record its invocation in `myMockObject.invocations`, and to stub in alternative implementations at runtime.
+Add `pod 'MockFive'` to your Podfile, or include both swift files from the `MockFive` directory to your project.  Then, make your mock object conform to `Mock` and add `let mockFiveLock = lock()` anywhere in the struct or class.  Now you can begin writing stubbed methods!
 
 # Manual Mocking Made Easier
-Using MockFive allows objects to report what functions have been called on them, and allows run-time method stubbing.  Because MockFive uses reflection to generate its messages, the `mock()` method guarantees that testing strings always match production code.  The `Mock` protocol may be adopted by both struct mocks and class mocks.
+Using MockFive allows objects to report what functions have been called on them, and allows run-time method stubbing.  Because MockFive uses reflection to generate its messages, the `stub()` method guarantees that testing strings always match production code.  The `Mock` protocol may be adopted by both struct mocks and class mocks.
 
 # Examples
 Protocol Mocking
