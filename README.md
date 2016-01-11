@@ -1,3 +1,5 @@
+For detailed instructions, see my [blog entry](http://pairtree.io/2016/01/10/mockfive-simple-reliable-mocks-in-swift/)!
+
 # Installation
 Add `pod 'MockFive'` to your Podfile, or include both swift files from the `MockFive` directory to your project.
 
