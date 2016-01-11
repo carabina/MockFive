@@ -1,5 +1,5 @@
 # MockFive Installation and Use
-Add `pod 'MockFive'` to your Podfile or drag `MockFive.swift` from the `MockFive` folder into your project.
+Add `pod 'MockFive'` to your Podfile, or include both swift files from the `MockFive` directory to your project.
 
 Make your mock object conform to `Mock` and add `let mockFiveLock = lock()` anywhere in the struct or class.  Now you can begin using `mock()`!  Call `mock()` within a function body to record its invocation in `myMockObject.invocations`, and to stub in alternative implementations at runtime.
 
